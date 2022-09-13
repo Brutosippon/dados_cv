@@ -5,6 +5,8 @@ import requests as rq
 from io import BytesIO
 
 app = Dash(__name__)
+#aux_heroku_deploy
+server = app.server 
 
 url = "https://github.com/Brutosippon/dados_cv/blob/main/db_PIB_stats_capeverde.xlsx?raw=true"
 data = rq.get(url).content
