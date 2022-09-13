@@ -1,7 +1,7 @@
+.venv
 venv
 *.pyc
 staticfiles
 .env
 .DS_Store
-db.sqlite3
 getting-started/*
