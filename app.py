@@ -18,7 +18,7 @@ fig1 = px.bar(df, x="ano", y="Produto_Interno_Bruto", color="Inflacao_Media_Anua
 
 ###dataframe para gráfico 1
 fig2 = px.scatter(df, x="ano", y="Population_total",
-                 size="Adjusted_net_national_income_per_capita_(current_US$)", color="Life_expectancy_at_birth_total_(years)", hover_name="Stock_da_Divida_Externa_",
+                 size="Life_expectancy_at_birth_total_(years)", color="Adjusted_net_national_income_per_capita_(current_US$)", hover_name="Stock_da_Divida_Externa_",
                  log_x=True, size_max=60)
 
 ###dataframe para tabela 1
@@ -62,13 +62,18 @@ html.Div(children='''
 
 ###tabela 1 
     html.H4(children='Cabo Verde DataFrame (2000-2021)'),
-    generate_table(df)
+    generate_table(df),
+
+    html.Div(children='''
+            ------------------
+        '''),
+
+    html.H4(children='''
+            Copyright 2022. All Rights Reserved João Fidalgo,  Data Source: The World Bank.  
+        ''')
 
 ])
 
-html.Div(children='''
-        Fonte: The World Bank. 
-    '''),
 
 
 if __name__ == '__main__':
