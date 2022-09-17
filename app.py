@@ -35,32 +35,40 @@ def generate_table(dataframe, max_rows=10):
     ])
 
 ###definir layout apenas dentro de um único div
-app.layout = html.Div(children=[
+app.layout = html.Div(className="app-div bg-black text-white black text-center",
+    children=[
     html.H1(children='Pró-Estatística'),
 
     html.H2(children='Dashboard: Com apenas alguns cliques podes ter os principais dados estatísticos de Cabo-Verde. Chegou a hora de simplificar a estatística para quem tem o dia a dia na palma da mão.'),
 
     html.Div(children='''
-        Fonte: The World Bank. 
+        1º Gráfico. 
     '''),
 ###gráfico 1 
     dcc.Graph(
         id='example-graph',
-        figure=fig1
+        figure=fig1,
+        style={'color':'#0a0a0a','text-align':'center'}
     ),
-
+html.Div(children='''
+        2º Gráfico. 
+    '''),
 ###gráfico 2
     dcc.Graph(
         id='life-exp-vs-gdp',
-        figure=fig2
+        figure=fig2,
+        style={'color':'#0a0a0a','text-align':'center'}
     ),
 
 ###tabela 1 
-    html.H4(children='Cabo Verde DataFrame  (2021)'),
+    html.H4(children='Cabo Verde DataFrame (2000-2021)'),
     generate_table(df)
 
 ])
 
+html.Div(children='''
+        Fonte: The World Bank. 
+    '''),
 
 
 if __name__ == '__main__':
