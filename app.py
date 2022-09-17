@@ -39,8 +39,9 @@ app.layout = html.Div(className="app-div bg-black text-white black text-center",
     children=[
     html.H1(children='Pró-Estatística'),
 
-    html.H3(children='Dashboard: Com apenas alguns cliques podes ter os principais dados estatísticos de Cabo-Verde. Chegou a hora de simplificar a estatística para quem tem o dia a dia na palma da mão.'),
-
+    html.H3(children='Dashboard: Com apenas alguns cliques podes ter os principais dados estatísticos de Cabo-Verde.'),
+    html.H3(children='Chegou a hora de simplificar a estatística para quem tem o dia a dia na palma da mão.'),
+    
     html.Div(children='''
         1º Gráfico. 
     '''),
