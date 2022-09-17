@@ -3,8 +3,9 @@ import plotly.express as px
 import pandas as pd
 import requests as rq
 from io import BytesIO
+from dash_bootstrap_components.themes import BOOTSTRAP
 
-app = Dash(__name__)
+app = Dash(external_stylesheets=[BOOTSTRAP])
 server = app.server 
 
 url = "https://github.com/Brutosippon/dados_cv/blob/main/db_PIB_stats_capeverde.xlsx?raw=true"
