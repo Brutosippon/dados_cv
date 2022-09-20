@@ -1,4 +1,4 @@
-from dash import Dash, html, dcc
+from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
 import pandas as pd
 import requests as rq
@@ -8,11 +8,20 @@ from dash_bootstrap_components.themes import BOOTSTRAP
 app = Dash(external_stylesheets=[BOOTSTRAP])
 server = app.server 
 
+
 url = "https://github.com/Brutosippon/dados_cv/blob/main/db_PIB_stats_capeverde.xlsx?raw=true"
 data = rq.get(url).content
 df = pd.read_excel(BytesIO(data))
 
+
 ###dataframe para gráfico 1
+to_dropdown_options = list(df.columns)
+
+#@app.callback(
+    #Output('dd-output-container', 'children'),
+    #Input('demo-dropdown', 'value')
+    #)
+
 
 fig1 = px.bar(df, x="ano", y="Produto_Interno_Bruto", color="Inflacao_Media_Anual", barmode="group")
 
@@ -34,6 +43,14 @@ def generate_table(dataframe, max_rows=10):
         ])
     ])
 
+@app.callback(
+    Output('dd-output-container', 'children'),
+    Input('dropdown_options', 'value')
+)
+def update_output(value):
+    return f'{value}'
+
+
 ###definir layout apenas dentro de um único div
 app.layout = html.Div(className="app-div bg-black text-white black text-center",
     children=[
@@ -45,10 +62,15 @@ app.layout = html.Div(className="app-div bg-black text-white black text-center",
     html.Div(children='''
         1º Gráfico. 
     '''),
+    
+        html.Label('Dropdown'),
+        dcc.Dropdown(to_dropdown_options, 'Produto_Interno_Bruto' , id='dropdown_options'),
+        html.Div(id='dd-output-container'),
+        
 ###gráfico 1 
     dcc.Graph(
-        id='example-graph',
-        figure=fig1,
+        id='bar-graph',
+        figure=(px.bar(df, x="ano", y='Produto_Interno_Bruto', color="Inflacao_Media_Anual", barmode="group")),
         style={'color':'#0a0a0a','text-align':'center'}
     ),
 html.Div(children='''
@@ -72,8 +94,9 @@ html.Div(children='''
     html.H4(children='''
             Copyright 2022. All Rights Reserved João Fidalgo,  Data Source: The World Bank.  
         ''')
-
+    
 ])
+
 
 
 
