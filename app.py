@@ -6,8 +6,10 @@ from io import BytesIO
 from dash_bootstrap_components.themes import BOOTSTRAP
 from bs4 import BeautifulSoup
 
-app = Dash(external_stylesheets=[BOOTSTRAP])
-server = app.server 
+app = Dash(__name__, title="Pró-Estatística", external_stylesheets=[BOOTSTRAP])
+
+# Declare server for Heroku deployment. Needed for Procfile.
+server = app.server
 
 url = "https://github.com/Brutosippon/dados_cv/blob/main/db_PIB_stats_capeverde.xlsx?raw=true"
 data = rq.get(url).content
