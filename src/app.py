@@ -19,8 +19,7 @@ to_dropdown_options = list(df.columns)
 
 #create an application that reads the excel file and Simple Interactive Dash App with Interactive Visualizations, Indicators example from the previous chapter by updating the time series when we hover over points in our scatter plot.
 
-###dataframe para tabela 1
-    ##dataframe para gráfico 1
+##dataframe para gráfico 1
 
 fig1 = px.bar(df, x="ano", y='Produto_Interno_Bruto' , color="Inflacao_Media_Anual", barmode="group")
 
@@ -28,7 +27,10 @@ fig2 = px.scatter(df, x="ano", y="Produto_Interno_Bruto", size="Life_expectancy_
                     log_x=True, size_max=60)
 
 fig3 = px.line(df, x="ano", y="Produto_Interno_Bruto", color="Inflacao_Media_Anual", line_group="Inflacao_Media_Anual", hover_name="Inflacao_Media_Anual", line_shape="spline", render_mode="svg")
+
 ##################################################################################
+###dataframe para tabela 1
+
 def generate_table(dataframe, max_rows=10):
     return html.Table([
         html.Thead(
@@ -40,7 +42,7 @@ def generate_table(dataframe, max_rows=10):
             ]) for i in range(min(len(dataframe), max_rows))
         ])
     ])
-
+##################################################################################
 
 ###definir layout apenas dentro de um único div
 app.layout = html.Div(className="app-div bg-black text-white black text-center",
@@ -132,11 +134,5 @@ def update_output(value):
 
 ###########################################################
 
-
-
 if __name__ == '__main__':
     app.run_server(debug=True)
-
-#if __name__ == '__main__':
-    #from os import environ
-    #app.run(debug=False, port=environ.get("PORT", 5000), processes=2)
