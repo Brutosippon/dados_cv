@@ -24,7 +24,7 @@ to_dropdown_options = list(df.columns)
 
 fig1 = px.bar(df, x="ano", y='Produto_Interno_Bruto' , color="Inflacao_Media_Anual", barmode="group")
 
-fig2 = px.scatter(df, x="ano", y="Produto_Interno_Bruto", size="Life_expectancy_at_birth_total_(years)", color="Adjusted_net_national_income_per_capita_(current_US$)", hover_name="Stock_da_Divida_Externa_",
+fig2 = px.scatter(df, x="ano", y="Produto_Interno_Bruto", size="Life_expectancy_at_birth_total_(years)", color="PIB_per_capita(US)", hover_name="Stock_da_Divida_Externa_",
                     log_x=True, size_max=60)
 
 fig3 = px.line(df, x="ano", y="Produto_Interno_Bruto", color="Inflacao_Media_Anual", line_group="Inflacao_Media_Anual", hover_name="Inflacao_Media_Anual", line_shape="spline", render_mode="svg")
@@ -80,11 +80,11 @@ html.H3(children='Configuração dos gráficos'),
     #Dropdown para escolher a cor do fig1
     html.Label('Eixo do Cor do Gráfico 1'),
     dcc.Dropdown(to_dropdown_options, 'Inflacao_Media_Anual' , id='color_axis_fig1', className="app-div bg-black text-black text-center"),
-    #Dropdown para fig2 escolher size="Life_expectancy_at_birth_total_(years)", color="Adjusted_net_national_income_per_capita_(current_US$)"
+    #Dropdown para fig2 escolher size="Life_expectancy_at_birth_total_(years)", color="PIB_per_capita(US)"
     html.Label('Eixo do Size do Gráfico 2'),
     dcc.Dropdown(to_dropdown_options, 'Life_expectancy_at_birth_total_(years)' , id='size_axis_fig2', className="app-div bg-black text-black text-center"),
     html.Label('Eixo do Cor do Gráfico 2'),
-    dcc.Dropdown(to_dropdown_options, 'Adjusted_net_national_income_per_capita_(current_US$)' , id='color_axis_fig2', className="app-div bg-black text-black text-center"),
+    dcc.Dropdown(to_dropdown_options, 'PIB_per_capita(US)' , id='color_axis_fig2', className="app-div bg-black text-black text-center"),
 
 
     html.Div(children='''
@@ -93,7 +93,12 @@ html.H3(children='Configuração dos gráficos'),
 
     html.H4(children='''
             Copyright 2022. All Rights Reserved João Fidalgo,  Data Source: The World Bank.  
-        ''')
+        '''),
+    
+    #div with https://www.linkedin.com/in/joao-fidalgo/
+    #html.A('LinkedIn', href='https://www.linkedin.com/in/joao-fidalgo/'),
+    #http://www.fidalgofinance.com/
+    #html.A('Portfólio', href='http://www.fidalgofinance.com/'
     
 ])
 
