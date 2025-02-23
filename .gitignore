@@ -1,6 +1,5 @@
 .venv
 venv
-env_dados
 *.pyc
 staticfiles
 .env

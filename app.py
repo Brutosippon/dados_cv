@@ -1,132 +1,144 @@
-#app.py
+#.\.venv\Scripts\activate
 from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
 import pandas as pd
-import requests
+import requests as rq
+from io import BytesIO
 from dash_bootstrap_components.themes import BOOTSTRAP
+from bs4 import BeautifulSoup
 
-app = Dash(__name__, title="Pro-Statistics", external_stylesheets=[BOOTSTRAP])
-server = app.server  # For Heroku deployment
+app = Dash(__name__, title="Pró-Estatística", external_stylesheets=[BOOTSTRAP])
 
-# Fetch GDP data from Eurostat (Portugal, 1995–2023, in million euros)
-url_gdp = "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nama_10_gdp?format=JSON&geo=PT&unit=CP_MEUR&na_item=B1GQ"
-response_gdp = requests.get(url_gdp).json()
-print("GDP Response:", response_gdp)
+# Declare server for Heroku deployment. Needed for Procfile.
+server = app.server
 
-# Extract years and values for GDP
-all_years = list(response_gdp["dimension"]["time"]["category"]["index"].keys())
-gdp_data = response_gdp["value"]
-gdp_years = [year for i, year in enumerate(all_years) if str(i) in gdp_data]
-gdp_values = [gdp_data[str(i)] for i, year in enumerate(all_years) if str(i) in gdp_data]
-print("GDP Years:", gdp_years)
-print("GDP Values:", gdp_values)
+url = "https://github.com/Brutosippon/dados_cv/blob/main/db_PIB_stats_capeverde.xlsx?raw=true"
+data = rq.get(url).content
+df = pd.read_excel(BytesIO(data))
 
-# Fetch inflation data (Portugal, annual average, 1996–2024)
-url_inflation = "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_aind?format=JSON&geo=PT&unit=RCH_A_AVG&coicop=CP00"
-response_inflation = requests.get(url_inflation).json()
-print("Inflation Response:", response_inflation)
+to_dropdown_options = list(df.columns)
 
-# Extract years and values for inflation
-inflation_years = list(response_inflation["dimension"]["time"]["category"]["index"].keys())
-inflation_data = response_inflation["value"]
-inflation_years_with_data = [year for i, year in enumerate(inflation_years) if str(i) in inflation_data]
-inflation_values = [inflation_data[str(i)] for i, year in enumerate(inflation_years) if str(i) in inflation_data]
-print("Inflation Years:", inflation_years_with_data)
-print("Inflation Values:", inflation_values)
+#create an application that reads the excel file and Simple Interactive Dash App with Interactive Visualizations, Indicators example from the previous chapter by updating the time series when we hover over points in our scatter plot.
 
-# Create DataFrame using overlapping years for GDP and Inflation
-common_years = sorted(set(gdp_years) & set(inflation_years_with_data))
-print("Common Years (GDP & Inflation):", common_years)
+##dataframe para gráfico 1
 
-df = pd.DataFrame({
-    "Year": common_years,
-    "GDP": [gdp_data[str(all_years.index(year))] for year in common_years if str(all_years.index(year)) in gdp_data],
-    "Inflation": [inflation_data[str(inflation_years.index(year))] for year in common_years if str(inflation_years.index(year)) in inflation_data]
-})
-print("DataFrame:", df)
+fig1 = px.bar(df, x="ano", y='Produto_Interno_Bruto' , color="Inflacao_Media_Anual", barmode="group")
 
-# Ensure Year is treated as a categorical variable
-df["Year"] = df["Year"].astype(str)
+fig2 = px.scatter(df, x="ano", y="Produto_Interno_Bruto", size="Life_expectancy_at_birth_total_(years)", color="PIB_per_capita(US)", hover_name="Stock_da_Divida_Externa_",
+                    log_x=True, size_max=60)
 
-# Dropdown options
-dropdown_options = ["GDP", "Inflation"]  # Only include available stats
+fig3 = px.line(df, x="ano", y="Produto_Interno_Bruto", color="Inflacao_Media_Anual", line_group="Inflacao_Media_Anual", hover_name="Inflacao_Media_Anual", line_shape="spline", render_mode="svg")
 
-# Initial charts
-fig1 = px.bar(df, x="Year", y="GDP", color="Inflation", barmode="group")
+##################################################################################
+###dataframe para tabela 1
 
-# For scatter plot, use absolute value of Inflation for size to avoid negative values
-fig2 = px.scatter(df, x="Year", y="GDP", size=df["Inflation"].abs(), color="Inflation", log_x=True, size_max=60)
-
-# App layout with CSS classes
-app.layout = html.Div(
-    className="app-div black text-white text-center",
-    children=[
-        html.H1("Pro-Statistics"),
-        html.H3("Dashboard: Access key statistical data for Portugal with just a few clicks."),
-        html.H3("Simplifying statistics for everyday use."),
-        html.Hr(className="black"),  # Using your hr styling
-        html.H4("Portugal DataFrame (1996–2023)"),
-        
-        # Chart 1: Bar chart
-        html.Div("1st Chart: Bar Chart", className="tabs-group"),
-        dcc.Graph(id="graph1", figure=fig1),
-        
-        # Chart 2: Scatter plot
-        html.Div("2nd Chart: Scatter Plot", className="tabs-group"),
-        dcc.Graph(id="graph2", figure=fig2),
-        
-        # Configuration section with grid layout for dropdowns
-        html.H3("Chart Configuration", className="tabs-group"),
-        html.Div(
-            className="dropdown-container",
-            children=[
-                html.Label("Y-Axis for Charts", className="budget-label"),
-                dcc.Dropdown(
-                    dropdown_options, "GDP", id="y_axis_column", 
-                    className="dropdown-button bg-black text-black"
-                ),
-                html.Label("Color Axis for Chart 1", className="budget-label"),
-                dcc.Dropdown(
-                    dropdown_options, "Inflation", id="color_axis_fig1", 
-                    className="dropdown-button bg-black text-black"
-                ),
-                html.Label("Size Axis for Chart 2", className="budget-label"),
-                dcc.Dropdown(
-                    dropdown_options, "Inflation", id="size_axis_fig2", 
-                    className="dropdown-button bg-black text-black"
-                ),
-                html.Label("Color Axis for Chart 2", className="budget-label"),
-                dcc.Dropdown(
-                    dropdown_options, "Inflation", id="color_axis_fig2", 
-                    className="dropdown-button bg-black text-black"
-                ),
-            ]
+def generate_table(dataframe, max_rows=10):
+    return html.Table([
+        html.Thead(
+            html.Tr([html.Th(col) for col in dataframe.columns])
         ),
-        
-        html.Hr(className="black"),
-        html.H4("Copyright 2022. All Rights Reserved João Fidalgo. Data Source: Eurostat.", className="tabs-group"),
-    ]
-)
+        html.Tbody([
+            html.Tr([
+                html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
+            ]) for i in range(min(len(dataframe), max_rows))
+        ])
+    ])
+##################################################################################
 
-# Callback for updating bar chart (Chart 1)
+###definir layout apenas dentro de um único div
+app.layout = html.Div(className="app-div bg-black text-white black text-center",
+    children=[
+    html.H1(children='Pró-Estatística'),
+
+    html.H3(children='Dashboard: Com apenas alguns cliques podes ter os principais dados estatísticos de Cabo-Verde.'),
+    html.H3(children='Chegou a hora de simplificar a estatística para quem tem o dia a dia na palma da mão.'),
+    html.Div(children='''
+            ------------------------ 
+        '''), 
+    html.H4(children='Cabo Verde DataFrame (2000-2021)'),
+###gráfico 1 
+    html.Div(children='''
+        1º Gráfico. 
+    '''), 
+        dcc.Graph(id='graph1', figure=fig1),
+
+
+ 
+html.Div(children='''
+        2º Gráfico. 
+    '''),
+###gráfico 2
+dcc.Graph(id='graph2', figure=fig2),
+
+###tabela 1 
+    #generate_table(df),
+
+
+html.H3(children='Configuração dos gráficos'),
+    html.Label('Eixo do Y dos Gráficos'),
+    dcc.Dropdown(to_dropdown_options, 'Produto_Interno_Bruto' , id='y_axis_column', className="app-div bg-black text-black text-center"),
+    #Dropdown para escolher a cor do fig1
+    html.Label('Eixo do Cor do Gráfico 1'),
+    dcc.Dropdown(to_dropdown_options, 'Inflacao_Media_Anual' , id='color_axis_fig1', className="app-div bg-black text-black text-center"),
+    #Dropdown para fig2 escolher size="Life_expectancy_at_birth_total_(years)", color="PIB_per_capita(US)"
+    html.Label('Eixo do Size do Gráfico 2'),
+    dcc.Dropdown(to_dropdown_options, 'Life_expectancy_at_birth_total_(years)' , id='size_axis_fig2', className="app-div bg-black text-black text-center"),
+    html.Label('Eixo do Cor do Gráfico 2'),
+    dcc.Dropdown(to_dropdown_options, 'PIB_per_capita(US)' , id='color_axis_fig2', className="app-div bg-black text-black text-center"),
+
+
+    html.Div(children='''
+            ------------------
+        '''),
+
+    html.H4(children='''
+            Copyright 2022. All Rights Reserved João Fidalgo,  Data Source: The World Bank.  
+        '''),
+    
+    #div with https://www.linkedin.com/in/joao-fidalgo/
+    #html.A('LinkedIn', href='https://www.linkedin.com/in/joao-fidalgo/'),
+    #http://www.fidalgofinance.com/
+    #html.A('Portfólio', href='http://www.fidalgofinance.com/'
+    
+])
+
+to_dropdown_options = list(df.columns)
+
+#create a app.callback for the dropdown to update dcc.Graph(id='graph1', figure=fig1)
+# create app.callback for id graph1 px.bar
 @app.callback(
-    Output("graph1", "figure"),
-    [Input("y_axis_column", "value"), Input("color_axis_fig1", "value")]
-)
-def update_bar_chart(y_axis, color_axis):
-    fig1 = px.bar(df, x="Year", y=y_axis, color=color_axis, barmode="group")
+    Output('graph1', 'figure'),
+    Input('y_axis_column', 'value'),
+    Input('color_axis_fig1', 'value')
+    )
+
+
+def update_graph(y_axis_column_name,color_axis_fig1_name):
+    fig1 = px.bar(df, x="ano", y=y_axis_column_name, color=color_axis_fig1_name , barmode="group")
     return fig1
 
-# Callback for updating scatter plot (Chart 2)
+
+# create app.callback for id graph2 px.scatter
 @app.callback(
-    Output("graph2", "figure"),
-    [Input("y_axis_column", "value"), Input("size_axis_fig2", "value"), Input("color_axis_fig2", "value")]
-)
-def update_scatter_chart(y_axis, size_axis, color_axis):
-    # Use absolute value for size to handle negative inflation
-    size_values = df[size_axis].abs() if size_axis == "Inflation" else df[size_axis]
-    fig2 = px.scatter(df, x="Year", y=y_axis, size=size_values, color=color_axis, log_x=True, size_max=60)
+    Output('graph2', 'figure'),
+    Input('y_axis_column', 'value'),
+    Input('size_axis_fig2', 'value'),
+    Input('color_axis_fig2', 'value')
+    )
+
+def update_graph(y_axis_column_name,size_axis_fig2_name,color_axis_fig2_name):
+    fig2 = px.scatter(df, x="ano", y=y_axis_column_name, size=size_axis_fig2_name, color=color_axis_fig2_name, hover_name="Stock_da_Divida_Externa_",
+                    log_x=True, size_max=60)
     return fig2
 
-if __name__ == "__main__":
+
+def update_output(value):
+    return 'You have selected "{}"'.format(value)
+
+
+
+
+###########################################################
+
+if __name__ == '__main__':
     app.run_server(debug=True)
